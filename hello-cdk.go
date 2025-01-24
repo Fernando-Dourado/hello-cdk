@@ -5,6 +5,8 @@ import (
 	// "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
+
+	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
 )
 
 type HelloCdkStackProps struct {
@@ -20,10 +22,29 @@ func NewHelloCdkStack(scope constructs.Construct, id string, props *HelloCdkStac
 
 	// The code that defines your stack goes here
 
-	// example resource
-	// queue := awssqs.NewQueue(stack, jsii.String("HelloCdkQueue"), &awssqs.QueueProps{
-	// 	VisibilityTimeout: awscdk.Duration_Seconds(jsii.Number(300)),
-	// })
+	// Define the Lambda function resource
+	myFunction := awslambda.NewFunction(stack, jsii.String("HelloWorldFunction"), &awslambda.FunctionProps{
+		Runtime: awslambda.Runtime_NODEJS_20_X(), // Provide any supported Node.js runtime
+		Handler: jsii.String("index.handler"),
+		Code: awslambda.Code_FromInline(jsii.String(`
+      exports.handler = async function(event) {
+        return {
+          statusCode: 200,
+          body: JSON.stringify('Hello World!'),
+        };
+      };
+    `)),
+	})
+
+	// Define the Lambda function URL resource
+	myFunctionUrl := myFunction.AddFunctionUrl(&awslambda.FunctionUrlOptions{
+		AuthType: awslambda.FunctionUrlAuthType_NONE,
+	})
+
+	// Define a CloudFormation output for your URL
+	awscdk.NewCfnOutput(stack, jsii.String("myFunctionUrlOutput"), &awscdk.CfnOutputProps{
+		Value: myFunctionUrl.Url(),
+	})
 
 	return stack
 }
@@ -49,15 +70,15 @@ func env() *awscdk.Environment {
 	// Account/Region-dependent features and context lookups will not work, but a
 	// single synthesized template can be deployed anywhere.
 	//---------------------------------------------------------------------------
-	return nil
+	// return nil
 
 	// Uncomment if you know exactly what account and region you want to deploy
 	// the stack to. This is the recommendation for production stacks.
 	//---------------------------------------------------------------------------
-	// return &awscdk.Environment{
-	//  Account: jsii.String("123456789012"),
-	//  Region:  jsii.String("us-east-1"),
-	// }
+	return &awscdk.Environment{
+		Account: jsii.String("806630305776"),
+		Region:  jsii.String("us-west-1"),
+	}
 
 	// Uncomment to specialize this stack for the AWS Account and Region that are
 	// implied by the current CLI configuration. This is recommended for dev
