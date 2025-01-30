@@ -1,8 +1,8 @@
 module hello-cdk
 
-go 1.22.0
+go 1.22
 
-toolchain go1.23.5
+toolchain go1.22
 
 require (
 	github.com/aws/aws-cdk-go/awscdk/v2 v2.176.0
